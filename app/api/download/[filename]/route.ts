@@ -7,14 +7,27 @@ export async function GET(
   { params }: { params: Promise<{ filename: string }> }
 ) {
   const { filename } = await params;
-  const filePath = path.join(process.cwd(), "storage", "exports", filename);
+
+  // Sanitize: only allow alphanumeric, dots, dashes, underscores
+  const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "");
+  if (sanitized !== filename) {
+    return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
+  }
+
+  const exportDir = path.join(process.cwd(), "storage", "exports");
+  const resolved = path.resolve(exportDir, sanitized);
+
+  // Prevent path traversal — resolved must stay within exportDir
+  if (!resolved.startsWith(exportDir + path.sep)) {
+    return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
+  }
 
   try {
-    const buffer = await fs.readFile(filePath);
+    const buffer = await fs.readFile(resolved);
     return new NextResponse(buffer, {
       headers: {
-        "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Type": "application/octet-stream",
+        "Content-Disposition": `attachment; filename="${sanitized}"`,
       },
     });
   } catch {

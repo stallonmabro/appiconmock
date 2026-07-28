@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
     await prisma.export.create({
       data: {
         userId,
-        projectId: "00000000-0000-0000-0000-000000000000",
-        type: exportType === "all" ? "ios" : (exportType as "ios" | "android" | "mockup"),
+        projectId: null,
+        type: exportType === "all" || exportType === "custom" ? "ios" : (exportType as "ios" | "android" | "mockup"),
         fileUrl: `/storage/exports/${fileName}`,
         fileSize,
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),

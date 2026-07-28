@@ -12,11 +12,14 @@ const USER_DAILY_LIMIT = 20;
 const guestQuota = new Map<string, { count: number; resetAt: Date }>();
 
 function getClientIp(req: NextRequest): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  );
+  // nginx appends to the chain — last entry is the real client
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const ips = forwarded.split(",");
+    const last = ips[ips.length - 1]?.trim();
+    if (last) return last;
+  }
+  return req.headers.get("x-real-ip") || "unknown";
 }
 
 function checkGuestQuota(ipHash: string): boolean {
