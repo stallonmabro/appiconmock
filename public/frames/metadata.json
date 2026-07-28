@@ -1,0 +1,29 @@
+{
+  "devices": [
+    {
+      "id": "iphone-16-pro",
+      "name": "iPhone 16 Pro",
+      "colors": [
+        { "id": "black", "label": "Black Titanium", "frameImage": "iphone-16-pro-black.png" },
+        { "id": "white", "label": "White Titanium", "frameImage": "iphone-16-pro-white.png" },
+        { "id": "natural", "label": "Natural Titanium", "frameImage": "iphone-16-pro-natural.png" }
+      ],
+      "orientations": ["portrait", "landscape"],
+      "screenMask": { "x": 40, "y": 78, "width": 1130, "height": 2440 },
+      "frameSize": { "width": 1210, "height": 2556 },
+      "shadow": true
+    },
+    {
+      "id": "pixel-9",
+      "name": "Google Pixel 9",
+      "colors": [
+        { "id": "obsidian", "label": "Obsidian", "frameImage": "pixel-9-obsidian.png" },
+        { "id": "porcelain", "label": "Porcelain", "frameImage": "pixel-9-porcelain.png" }
+      ],
+      "orientations": ["portrait", "landscape"],
+      "screenMask": { "x": 38, "y": 72, "width": 1044, "height": 2256 },
+      "frameSize": { "width": 1120, "height": 2400 },
+      "shadow": true
+    }
+  ]
+}

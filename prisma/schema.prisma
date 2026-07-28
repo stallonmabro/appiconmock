@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  guest
+  user
+  premium
+  admin
+}
+
+enum ProjectType {
+  icon
+  mockup
+}
+
+enum ExportType {
+  ios
+  android
+  mockup
+}
+
+enum AdPlacement {
+  editor_top
+  export_modal
+  landing
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String?  @unique
+  passwordHash   String?
+  name           String?
+  avatar         String?
+  role           UserRole @default(guest)
+  aiQuotaUsed    Int      @default(0)
+  aiQuotaResetAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+  lastLoginAt    DateTime @default(now())
+
+  projects      Project[]
+  exports       Export[]
+  adImpressions AdImpression[]
+
+  @@map("users")
+}
+
+model Project {
+  id           String      @id @default(uuid())
+  userId       String
+  type         ProjectType
+  name         String
+  thumbnailUrl String?
+  state        Json        @default("{}")
+  isPublic     Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exports Export[]
+
+  @@index([userId])
+  @@map("projects")
+}
+
+model Export {
+  id        String     @id @default(uuid())
+  projectId String
+  userId    String
+  type      ExportType
+  fileUrl   String
+  fileSize  Int
+  createdAt DateTime   @default(now())
+  expiresAt DateTime
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("exports")
+}
+
+model AdImpression {
+  id        String      @id @default(uuid())
+  userId    String?
+  placement AdPlacement
+  timestamp DateTime    @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, timestamp])
+  @@map("ad_impressions")
+}
+
+model AIGenerationCache {
+  id         String   @id @default(uuid())
+  promptHash String   @unique
+  imageUrl   String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("ai_generation_cache")
+}
