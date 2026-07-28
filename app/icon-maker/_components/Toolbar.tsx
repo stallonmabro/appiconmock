@@ -38,9 +38,12 @@ export function Toolbar() {
         break;
       case "star": {
         const points = [];
-        for (let i = 0; i < 5; i++) {
-          const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
-          points.push({ x: 100 + Math.cos(angle) * size/2, y: 100 + Math.sin(angle) * size/2 });
+        const outerR = size / 2;
+        const innerR = outerR * 0.4;
+        for (let i = 0; i < 10; i++) {
+          const angle = (i * Math.PI) / 5 - Math.PI / 2;
+          const r = i % 2 === 0 ? outerR : innerR;
+          points.push({ x: 100 + Math.cos(angle) * r, y: 100 + Math.sin(angle) * r });
         }
         obj = new Polygon(points, { left: 100, top: 100, fill: "#F59E0B" });
         break;
