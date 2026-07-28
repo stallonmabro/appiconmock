@@ -46,6 +46,7 @@ export function Canvas() {
     });
 
     fabricRef.current = fc;
+    (canvasRef.current as any).fabric = fc;
   }, [canvasSize, backgroundColor, addLayer, setSelectedLayer, layers]);
 
   useEffect(() => {
