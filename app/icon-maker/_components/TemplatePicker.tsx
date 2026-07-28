@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { loadSVGFromURL, util, type Canvas as FabricCanvas } from "fabric";
+import { loadSVGFromURL, util, Rect, type Canvas as FabricCanvas } from "fabric";
 import { useIconStore } from "@/stores/icon-store";
 
 interface Template {
@@ -32,7 +32,6 @@ export function TemplatePicker() {
       : MOCK_TEMPLATES.filter((t) => t.category === category);
 
   async function applyTemplate(template: Template) {
-    reset();
     const canvas = (document.querySelector("canvas") as any)?.fabric as FabricCanvas | undefined;
     if (!canvas) return;
 
@@ -44,6 +43,24 @@ export function TemplatePicker() {
         console.warn(`Template SVG yielded no objects: ${template.svgPath}`);
         return;
       }
+      // Reset store and clear canvas
+      reset();
+      canvas.clear();
+      canvas.renderAll();
+
+      // Add background layer first (normally handled by Canvas useEffect, but we bypass it here)
+      const bg = new Rect({
+        left: 0, top: 0, width: 1024, height: 1024,
+        fill: "#FFFFFF", selectable: false, evented: false,
+        data: { layerId: "background", isBackground: true },
+      });
+      canvas.add(bg);
+      canvas.sendObjectToBack(bg);
+      useIconStore.getState().addLayer({
+        id: "background", type: "shape", name: "Background",
+        fabricObject: bg.toJSON() as Record<string, unknown>, visible: true,
+      });
+
       const group = util.groupSVGElements(validObjects, options);
       group.scaleToWidth(1024);
       group.scaleToHeight(1024);
