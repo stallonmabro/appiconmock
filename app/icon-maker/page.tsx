@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Toolbar } from "./_components/Toolbar";
 import { PropertiesPanel } from "./_components/PropertiesPanel";
 import { ExportPanel } from "./_components/ExportPanel";
@@ -17,18 +18,20 @@ const Canvas = dynamic(() => import("./_components/Canvas").then((m) => ({ defau
 
 export default function IconMakerPage() {
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Toolbar />
-      <div className="flex-1 flex items-center justify-center bg-neutral-100 p-8 overflow-auto">
-        <div className="flex flex-col items-center gap-4">
-          <AdBanner placement="editor_top" className="mb-2 w-full max-w-[512px]" />
-          <ExportPanel />
-          <Canvas />
+    <ErrorBoundary>
+      <div className="flex h-screen overflow-hidden">
+        <Toolbar />
+        <div className="flex-1 flex items-center justify-center bg-neutral-100 p-8 overflow-auto">
+          <div className="flex flex-col items-center gap-4">
+            <AdBanner placement="editor_top" className="mb-2 w-full max-w-[512px]" />
+            <ExportPanel />
+            <Canvas />
+          </div>
         </div>
+        <PropertiesPanel />
+        <AIGenerator />
+        <TemplatePicker />
       </div>
-      <PropertiesPanel />
-      <AIGenerator />
-      <TemplatePicker />
-    </div>
+    </ErrorBoundary>
   );
 }
