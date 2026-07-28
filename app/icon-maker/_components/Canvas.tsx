@@ -71,7 +71,7 @@ export function Canvas() {
         data: { layerId: "background", isBackground: true },
       });
       fabricRef.current.add(bg);
-      (fabricRef.current as any).sendToBack(bg);
+      bg.sendToBack();
       addLayer({
         id: "background",
         type: "shape",
