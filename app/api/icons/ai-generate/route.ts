@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -5,6 +6,46 @@ import { generateIconImages, hashPrompt } from "@/lib/imagen";
 
 const GUEST_DAILY_LIMIT = 5;
 const USER_DAILY_LIMIT = 20;
+
+// In-memory guest quota tracker keyed by hashed IP.
+// Entries are cleaned up on each request when their resetAt has passed.
+const guestQuota = new Map<string, { count: number; resetAt: Date }>();
+
+function getClientIp(req: NextRequest): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
+function checkGuestQuota(ipHash: string): boolean {
+  const now = new Date();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Clean up stale entries across the whole map
+  for (const [key, entry] of guestQuota) {
+    if (entry.resetAt < today) {
+      guestQuota.delete(key);
+    }
+  }
+
+  const entry = guestQuota.get(ipHash);
+  if (!entry || entry.resetAt < today) {
+    guestQuota.set(ipHash, { count: 0, resetAt: now });
+    return true;
+  }
+
+  return entry.count < GUEST_DAILY_LIMIT;
+}
+
+function incrementGuestQuota(ipHash: string): void {
+  const entry = guestQuota.get(ipHash);
+  if (entry) {
+    entry.count += 1;
+  }
+}
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -19,7 +60,11 @@ export async function POST(req: NextRequest) {
         ? USER_DAILY_LIMIT
         : GUEST_DAILY_LIMIT;
 
-  // Quota check for non-premium users with a valid user ID
+  // Quota check for authenticated non-premium users (DB-backed).
+  // NOTE: The read-then-write pattern here (fetch quota, compare, then update)
+  // is not transactional. Concurrent requests can slip past the limit. Acceptable
+  // for v1 scale — if this becomes a problem, wrap in a Prisma transaction or
+  // use an atomic conditional update.
   if (role !== "premium" && role !== "admin" && userId) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
@@ -35,6 +80,23 @@ export async function POST(req: NextRequest) {
         data: { aiQuotaUsed: 0, aiQuotaResetAt: new Date() },
       });
     } else if (user.aiQuotaUsed >= limit) {
+      return NextResponse.json(
+        {
+          error:
+            "Daily AI generation limit reached. Try again tomorrow or sign up for more.",
+          quotaExceeded: true,
+        },
+        { status: 429 }
+      );
+    }
+  }
+
+  // Quota check for unauthenticated guests (IP-based, in-memory).
+  if (!userId) {
+    const ip = getClientIp(req);
+    const ipHash = crypto.createHash("sha256").update(ip).digest("hex").slice(0, 16);
+
+    if (!checkGuestQuota(ipHash)) {
       return NextResponse.json(
         {
           error:
@@ -81,6 +143,17 @@ export async function POST(req: NextRequest) {
         where: { id: userId },
         data: { aiQuotaUsed: { increment: 1 } },
       });
+    }
+
+    // Increment guest IP quota
+    if (!userId) {
+      const ip = getClientIp(req);
+      const ipHash = crypto
+        .createHash("sha256")
+        .update(ip)
+        .digest("hex")
+        .slice(0, 16);
+      incrementGuestQuota(ipHash);
     }
 
     return NextResponse.json({ images });
