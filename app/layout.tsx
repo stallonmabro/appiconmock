@@ -8,8 +8,26 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AppIconMock — Free App Icon & Mockup Maker",
-  description: "Create stunning app icons for iOS and Android, and beautiful device mockups. Free, no sign-up required.",
+  title: {
+    default: "AppIconMock — Free App Icon & Mockup Maker",
+    template: "%s | AppIconMock",
+  },
+  description: "Create stunning app icons for iOS and Android, and beautiful device mockups. Free, no sign-up required. AI-powered icon generation.",
+  keywords: ["app icon maker", "mockup generator", "iOS icon", "Android icon", "device mockup", "app store screenshot"],
+  authors: [{ name: "AppIconMock" }],
+  openGraph: {
+    title: "AppIconMock — Free App Icon & Mockup Maker",
+    description: "Create stunning app icons and device mockups. Free, AI-powered.",
+    url: "https://appiconmock.com",
+    siteName: "AppIconMock",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AppIconMock — Free App Icon & Mockup Maker",
+    description: "Create stunning app icons and device mockups. Free, AI-powered.",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
