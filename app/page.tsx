@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { Header } from "@/components/layout/header";
 import { ToolCard } from "@/components/landing/tool-card";
+import { AdBanner } from "@/components/ads/AdBanner";
 
 export default async function LandingPage() {
   const session = await auth();
@@ -35,6 +36,8 @@ export default async function LandingPage() {
             cta="Create Mockup"
           />
         </section>
+
+        <AdBanner placement="landing" className="mt-16 max-w-4xl mx-auto" />
       </main>
     </div>
   );

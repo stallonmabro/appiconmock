@@ -7,6 +7,7 @@ import { ScenePicker } from "./_components/ScenePicker";
 import { LayoutPicker } from "./_components/LayoutPicker";
 import { ExportPanel } from "./_components/ExportPanel";
 import { useMockupStore } from "@/stores/mockup-store";
+import { AdBanner } from "@/components/ads/AdBanner";
 
 export default function MockupMakerPage() {
   const screenshot = useMockupStore((s) => s.screenshot);
@@ -26,6 +27,7 @@ export default function MockupMakerPage() {
           <ScreenshotUpload />
         ) : (
           <>
+            <AdBanner placement="editor_top" className="mb-2" />
             <ExportPanel />
             <Canvas />
           </>
