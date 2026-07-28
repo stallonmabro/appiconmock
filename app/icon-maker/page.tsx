@@ -7,6 +7,7 @@ import { Toolbar } from "./_components/Toolbar";
 import { PropertiesPanel } from "./_components/PropertiesPanel";
 import { ExportPanel } from "./_components/ExportPanel";
 import { AIGenerator } from "./_components/AIGenerator";
+import { TemplatePicker } from "./_components/TemplatePicker";
 
 const Canvas = dynamic(() => import("./_components/Canvas").then((m) => ({ default: m.Canvas })), {
   ssr: false,
@@ -25,6 +26,7 @@ export default function IconMakerPage() {
       </div>
       <PropertiesPanel />
       <AIGenerator />
+      <TemplatePicker />
     </div>
   );
 }
